@@ -1,5 +1,5 @@
 /**
- * Home screen - Dashboard for the Awareness Network app
+ * Home screen - Luma-inspired minimalist dashboard
  */
 
 import React, { useEffect, useState } from 'react';
@@ -11,6 +11,8 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
 import * as ImagePicker from 'expo-image-picker';
@@ -18,8 +20,10 @@ import * as FileSystem from 'expo-file-system';
 import apiService from '../services/api';
 import { encryptData } from '../utils/encryption';
 import { addMemory } from '../store/slices/memoriesSlice';
+import { theme } from '../theme';
+import { Card } from '../components/Card';
 
-const HomeScreen = () => {
+const HomeScreen = ({ navigation }: any) => {
   const user = useSelector((state: RootState) => state.auth.user);
   const publicKey = user?.publicKey || '';
   const dispatch = useDispatch();
@@ -41,7 +45,7 @@ const HomeScreen = () => {
       setStats({
         memories: memories.length,
         contacts: contacts.length,
-        videos: 0, // Will be implemented later
+        videos: 0,
       });
     } catch (error) {
       console.error('Failed to load stats:', error);
@@ -88,15 +92,12 @@ const HomeScreen = () => {
 
   const uploadPhoto = async (uri: string) => {
     try {
-      // Read the file as base64
       const base64 = await FileSystem.readAsStringAsync(uri, {
         encoding: FileSystem.EncodingType.Base64,
       });
 
-      // Encrypt the photo data
       const encryptedContent = encryptData(base64, publicKey);
       
-      // Encrypt metadata
       const metadata = {
         filename: uri.split('/').pop(),
         mimeType: 'image/jpeg',
@@ -104,7 +105,6 @@ const HomeScreen = () => {
       };
       const encryptedMetadata = encryptData(metadata, publicKey);
 
-      // Upload to backend
       const memory = await apiService.uploadMemory({
         type: 'photo',
         encryptedContent,
@@ -122,122 +122,252 @@ const HomeScreen = () => {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>{user?.email}</Text>
-      </View>
-
-      <View style={styles.statsContainer}>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.memories}</Text>
-          <Text style={styles.statLabel}>Memories</Text>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.greeting}>Welcome back</Text>
+            <Text style={styles.title}>Awareness</Text>
+          </View>
+          
+          <TouchableOpacity
+            style={styles.profileButton}
+            onPress={() => navigation?.navigate('Profile')}
+          >
+            <View style={styles.profileIcon}>
+              <Text style={styles.profileInitial}>
+                {user?.email?.charAt(0).toUpperCase() || 'A'}
+              </Text>
+            </View>
+          </TouchableOpacity>
         </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.contacts}</Text>
-          <Text style={styles.statLabel}>Contacts</Text>
+
+        {/* Stats */}
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{stats.memories}</Text>
+            <Text style={styles.statLabel}>Memories</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{stats.contacts}</Text>
+            <Text style={styles.statLabel}>Contacts</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{stats.videos}</Text>
+            <Text style={styles.statLabel}>Videos</Text>
+          </View>
         </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{stats.videos}</Text>
-          <Text style={styles.statLabel}>Videos</Text>
+
+        {/* Quick Actions */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          
+          <View style={styles.actionsGrid}>
+            <TouchableOpacity
+              style={styles.actionCard}
+              onPress={handleCapturePhoto}
+            >
+              <LinearGradient
+                colors={['#6366f1', '#8b5cf6']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.actionGradient}
+              >
+                <Text style={styles.actionIcon}>📸</Text>
+                <Text style={styles.actionText}>Capture</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.actionCard}
+              onPress={handleSelectPhoto}
+            >
+              <LinearGradient
+                colors={['#8b5cf6', '#ec4899']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.actionGradient}
+              >
+                <Text style={styles.actionIcon}>🖼️</Text>
+                <Text style={styles.actionText}>Gallery</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.actionsGrid}>
+            <TouchableOpacity
+              style={styles.actionCard}
+              onPress={() => navigation?.navigate('Contacts')}
+            >
+              <LinearGradient
+                colors={['#ec4899', '#f43f5e']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.actionGradient}
+              >
+                <Text style={styles.actionIcon}>💼</Text>
+                <Text style={styles.actionText}>Scan Card</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.actionCard}
+              onPress={() => navigation?.navigate('Memories')}
+            >
+              <LinearGradient
+                colors={['#f43f5e', '#fb923c']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.actionGradient}
+              >
+                <Text style={styles.actionIcon}>🎬</Text>
+                <Text style={styles.actionText}>Video</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
 
-      <View style={styles.actionsContainer}>
-        <Text style={styles.sectionTitle}>Quick Actions</Text>
-        
-        <TouchableOpacity style={styles.actionButton} onPress={handleCapturePhoto}>
-          <Text style={styles.actionButtonText}>📷 Capture Photo</Text>
-        </TouchableOpacity>
+        {/* Recent Memories */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Recent Memories</Text>
+            <TouchableOpacity onPress={() => navigation?.navigate('Memories')}>
+              <Text style={styles.seeAll}>See all</Text>
+            </TouchableOpacity>
+          </View>
 
-        <TouchableOpacity style={styles.actionButton} onPress={handleSelectPhoto}>
-          <Text style={styles.actionButtonText}>🖼️ Upload from Gallery</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.actionButton}>
-          <Text style={styles.actionButtonText}>🎬 Create Video Memory</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.actionButton}>
-          <Text style={styles.actionButtonText}>💼 Scan Business Card</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+          <Text style={styles.emptyText}>
+            Your memories will appear here
+          </Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: theme.colors.background.primary,
+  },
+  scrollView: {
+    flex: 1,
   },
   header: {
-    padding: 24,
-    paddingTop: 60,
-    backgroundColor: '#007AFF',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.xl,
+    paddingTop: theme.spacing.lg,
+    paddingBottom: theme.spacing.base,
+  },
+  greeting: {
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.text.secondary,
+    marginBottom: theme.spacing.xs,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 4,
+    fontSize: theme.typography.sizes['4xl'],
+    fontWeight: theme.typography.weights.bold as any,
+    color: theme.colors.text.primary,
   },
-  subtitle: {
-    fontSize: 14,
-    color: '#fff',
-    opacity: 0.9,
+  profileButton: {
+    padding: theme.spacing.xs,
+  },
+  profileIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: theme.borderRadius.full,
+    backgroundColor: theme.colors.background.elevated,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileInitial: {
+    fontSize: theme.typography.sizes.lg,
+    fontWeight: theme.typography.weights.semibold as any,
+    color: theme.colors.text.primary,
   },
   statsContainer: {
     flexDirection: 'row',
-    padding: 16,
-    gap: 12,
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.base,
+    gap: theme.spacing.base,
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: theme.colors.background.card,
+    borderRadius: theme.borderRadius.lg,
+    borderWidth: 1,
+    borderColor: theme.colors.border.subtle,
+    padding: theme.spacing.base,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   statNumber: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#007AFF',
-    marginBottom: 4,
+    fontSize: theme.typography.sizes['3xl'],
+    fontWeight: theme.typography.weights.bold as any,
+    color: theme.colors.text.primary,
+    marginBottom: theme.spacing.xs,
   },
   statLabel: {
-    fontSize: 12,
-    color: '#666',
+    fontSize: theme.typography.sizes.xs,
+    color: theme.colors.text.secondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  actionsContainer: {
-    padding: 16,
+  section: {
+    marginTop: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.xl,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing.base,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: 16,
+    fontSize: theme.typography.sizes.xl,
+    fontWeight: theme.typography.weights.semibold as any,
+    color: theme.colors.text.primary,
+    marginBottom: theme.spacing.base,
   },
-  actionButton: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+  seeAll: {
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.accent.primary,
   },
-  actionButtonText: {
-    fontSize: 16,
-    color: '#000',
-    fontWeight: '500',
+  actionsGrid: {
+    flexDirection: 'row',
+    gap: theme.spacing.base,
+    marginBottom: theme.spacing.base,
+  },
+  actionCard: {
+    flex: 1,
+    borderRadius: theme.borderRadius.lg,
+    overflow: 'hidden',
+  },
+  actionGradient: {
+    padding: theme.spacing.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 100,
+  },
+  actionIcon: {
+    fontSize: 32,
+    marginBottom: theme.spacing.sm,
+  },
+  actionText: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.semibold as any,
+    color: theme.colors.text.primary,
+  },
+  emptyText: {
+    fontSize: theme.typography.sizes.base,
+    color: theme.colors.text.tertiary,
+    textAlign: 'center',
+    paddingVertical: theme.spacing['2xl'],
   },
 });
 

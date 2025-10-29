@@ -1,20 +1,25 @@
 /**
- * Login screen for user authentication
+ * Login screen - Luma-inspired minimalist design
  */
 
 import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   StyleSheet,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useDispatch } from 'react-redux';
 import { setAuth } from '../store/slices/authSlice';
 import apiService from '../services/api';
+import { theme } from '../theme';
+import { Input } from '../components/Input';
+import { Button } from '../components/Button';
 
 const LoginScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
@@ -32,124 +37,167 @@ const LoginScreen = ({ navigation }: any) => {
     try {
       const response = await apiService.login(email, password);
       
-      // Set the auth token in the API service
       apiService.setAuthToken(response.token);
       
-      // Update Redux state
       dispatch(
         setAuth({
           user: response.user,
           token: response.token,
-          privateKey: response.privateKey, // In production, this should be stored securely
+          privateKey: response.privateKey,
         })
       );
     } catch (error: any) {
-      Alert.alert('Login Failed', error.response?.data?.message || 'An error occurred');
+      Alert.alert('Login Failed', error.response?.data?.message || 'Invalid credentials');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Awareness Network</Text>
-        <Text style={styles.subtitle}>Recall Everything, Forget Nothing</Text>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardView}
+      >
+        <View style={styles.content}>
+          {/* Logo/Brand */}
+          <View style={styles.header}>
+            <View style={styles.logoContainer}>
+              <LinearGradient
+                colors={theme.colors.accent.gradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.logo}
+              >
+                <Text style={styles.logoText}>A</Text>
+              </LinearGradient>
+            </View>
+            <Text style={styles.title}>Awareness</Text>
+            <Text style={styles.subtitle}>
+              Your AI-powered memory companion
+            </Text>
+          </View>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          editable={!loading}
-        />
+          {/* Form */}
+          <View style={styles.form}>
+            <Input
+              label="Email"
+              placeholder="your@email.com"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoComplete="email"
+              editable={!loading}
+            />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          editable={!loading}
-        />
+            <Input
+              label="Password"
+              placeholder="Enter your password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoComplete="password"
+              editable={!loading}
+            />
 
-        <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={handleLogin}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Log In</Text>
-          )}
-        </TouchableOpacity>
+            <TouchableOpacity style={styles.forgotPassword}>
+              <Text style={styles.forgotPasswordText}>
+                Forgot password?
+              </Text>
+            </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Register')}
-          disabled={loading}
-        >
-          <Text style={styles.linkText}>Don't have an account? Sign Up</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+            <Button
+              title="Sign In"
+              onPress={handleLogin}
+              loading={loading}
+              fullWidth
+              size="large"
+            />
+          </View>
+
+          {/* Footer */}
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>
+              Don't have an account?{' '}
+            </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+              <Text style={styles.signUpText}>Sign up</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: theme.colors.background.primary,
+  },
+  keyboardView: {
+    flex: 1,
   },
   content: {
     flex: 1,
+    paddingHorizontal: theme.spacing.xl,
     justifyContent: 'center',
-    padding: 24,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: theme.spacing['4xl'],
+  },
+  logoContainer: {
+    marginBottom: theme.spacing.xl,
+  },
+  logo: {
+    width: 80,
+    height: 80,
+    borderRadius: theme.borderRadius.xl,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoText: {
+    fontSize: theme.typography.sizes['4xl'],
+    fontWeight: theme.typography.weights.bold as any,
+    color: theme.colors.text.primary,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 8,
-    textAlign: 'center',
+    fontSize: theme.typography.sizes['4xl'],
+    fontWeight: theme.typography.weights.bold as any,
+    color: theme.colors.text.primary,
+    marginBottom: theme.spacing.sm,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 48,
+    fontSize: theme.typography.sizes.base,
+    color: theme.colors.text.secondary,
     textAlign: 'center',
   },
-  input: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
+  form: {
+    marginBottom: theme.spacing['2xl'],
   },
-  button: {
-    backgroundColor: '#007AFF',
-    borderRadius: 8,
-    padding: 16,
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    marginBottom: theme.spacing.xl,
+  },
+  forgotPasswordText: {
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.accent.primary,
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8,
   },
-  buttonDisabled: {
-    opacity: 0.6,
+  footerText: {
+    fontSize: theme.typography.sizes.base,
+    color: theme.colors.text.secondary,
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  linkText: {
-    color: '#007AFF',
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 24,
+  signUpText: {
+    fontSize: theme.typography.sizes.base,
+    fontWeight: theme.typography.weights.semibold as any,
+    color: theme.colors.accent.primary,
   },
 });
 
