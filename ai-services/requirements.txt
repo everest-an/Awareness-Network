@@ -1,0 +1,13 @@
+openai==1.12.0
+opencv-python==4.9.0.80
+pytesseract==0.3.10
+spacy==3.7.4
+requests==2.31.0
+python-dotenv==1.0.1
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.27
+pillow==10.2.0
+pyzbar==0.1.9
+qrcode==7.4.2
+flask==3.0.2
+flask-cors==4.0.0
