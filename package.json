@@ -1,5 +1,5 @@
 {
-  "name": "latentmind-marketplace",
+  "name": "awareness-network",
   "version": "1.0.0",
   "type": "module",
   "license": "MIT",
@@ -71,6 +71,7 @@
     "recharts": "^2.15.2",
     "sonner": "^2.0.7",
     "streamdown": "^1.4.0",
+    "stripe": "^20.1.0",
     "superjson": "^1.13.3",
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
