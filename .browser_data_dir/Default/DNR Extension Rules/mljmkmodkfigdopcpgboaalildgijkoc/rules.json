@@ -1,0 +1,1 @@
+[{"action":{"responseHeaders":[{"header":"content-disposition","operation":"remove"},{"header":"content-disposition","operation":"set","value":"inline"}],"type":"modifyHeaders"},"condition":{"resourceTypes":["main_frame","sub_frame"],"urlFilter":"*"},"id":1,"priority":1}]
