@@ -25,7 +25,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   const { socket, isConnected } = useSocket(user?.id.toString());
 
   useEffect(() => {
-    if (!socket) return;
+    if (!socket || !isConnected) return;
 
     // Transaction notifications
     socket.on("transaction:completed", (data: {
