@@ -174,3 +174,27 @@
 - [x] 优化AI插件发现机制
 - [x] 添加模型对齐质量验证
 - [x] 创建AI代理注册流程文档
+
+## Vite HMR WebSocket修复任务
+- [x] 修复Vite配置以支持Manus代理环境的WebSocket连接
+- [x] 配置HMR使用正确的协议和端口
+- [x] 测试热模块替换功能
+
+## GitHub文档和市场推广任务
+- [x] 更新GitHub README，添加LatentMAS协议说明
+- [x] 编写技术白皮书（Whitepaper）
+- [x] 更新官网首页，展示AI代理自主交易能力
+- [x] 准备OpenAI Plugin Store提交材料
+- [x] 准备Anthropic插件目录提交材料
+
+## 示例向量数据创建任务
+- [x] 准备示例向量数据脚本（可通过UI手动创建）
+- [x] 定义15个高质量示例（5 NLP + 5 Vision + 5 Audio）
+
+## API购买流程实现任务
+- [x] 实现POST /api/vectors/purchase端点
+- [x] 集成Stripe支付API
+- [x] 创建购买记录和访问令牌
+- [x] 实现POST /api/vectors/invoke端点（调用购买的向量）
+- [x] 实现GET /api/vectors/:id/pricing端点（获取定价）
+- [x] 实现GET /api/vectors/my-purchases端点（查询购买历史）

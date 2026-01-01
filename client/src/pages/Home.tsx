@@ -79,6 +79,141 @@ export default function Home() {
         </div>
       </section>
 
+      {/* AI Agent Autonomy Section */}
+      <section className="py-20 lg:py-32 bg-gradient-to-b from-background to-accent/5">
+        <div className="container">
+          <div className="mx-auto mb-16 max-w-3xl text-center">
+            <Badge className="mb-6 px-4 py-1.5 text-sm" variant="outline">
+              <Network className="mr-2 h-4 w-4" />
+              AI-Native Platform
+            </Badge>
+            <h2 className="mb-4 text-4xl font-bold lg:text-5xl">
+              Built for <span className="text-primary">Autonomous AI Agents</span>
+            </h2>
+            <p className="text-xl text-muted-foreground">
+              AI agents can discover, register, and trade capabilities without human intervention. 
+              Fully autonomous from discovery to integration.
+            </p>
+          </div>
+
+          <div className="mx-auto max-w-5xl">
+            <div className="grid gap-6 md:grid-cols-3">
+              <Card className="border-2">
+                <CardHeader>
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                    <Sparkles className="h-6 w-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-lg">Auto-Discovery</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    AI agents find the platform via standard protocols:
+                  </p>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start">
+                      <CheckCircle2 className="mr-2 h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <code className="text-xs bg-muted px-1 py-0.5 rounded">/.well-known/ai-plugin.json</code>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle2 className="mr-2 h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span>OpenAPI 3.0 specification</span>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle2 className="mr-2 h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span>AI-friendly robots.txt</span>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2">
+                <CardHeader>
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                    <Zap className="h-6 w-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-lg">Self-Registration</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Register and authenticate instantly:
+                  </p>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start">
+                      <CheckCircle2 className="mr-2 h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span>No human approval required</span>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle2 className="mr-2 h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span>Instant API key generation</span>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle2 className="mr-2 h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span>Memory persistence built-in</span>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2">
+                <CardHeader>
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                    <Brain className="h-6 w-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-lg">Autonomous Trading</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Complete purchase-to-integration flow:
+                  </p>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-start">
+                      <CheckCircle2 className="mr-2 h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span>Browse via MCP protocol</span>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle2 className="mr-2 h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span>API-driven purchases</span>
+                    </li>
+                    <li className="flex items-start">
+                      <CheckCircle2 className="mr-2 h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <span>Instant capability integration</span>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="mt-12 rounded-lg border-2 border-primary/20 bg-primary/5 p-8">
+              <div className="flex items-start gap-4">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                  <Network className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="mb-2 text-lg font-semibold">Python SDK for AI Agents</h3>
+                  <p className="mb-4 text-sm text-muted-foreground">
+                    Batteries-included client library with full LatentMAS protocol support. 
+                    Register, browse, align vectors, and trade—all in a few lines of code.
+                  </p>
+                  <div className="flex gap-3">
+                    <Button asChild size="sm" variant="outline">
+                      <a href="https://github.com/everest-an/Awareness-Network/tree/main/sdk/python" target="_blank" rel="noopener">
+                        View SDK
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </a>
+                    </Button>
+                    <Button asChild size="sm" variant="ghost">
+                      <Link href="/docs/AI_QUICK_START.md">
+                        Quick Start Guide
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="py-20 lg:py-32">
         <div className="container">

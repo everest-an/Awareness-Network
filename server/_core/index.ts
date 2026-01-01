@@ -13,6 +13,7 @@ import latentmasRouter from "../latentmas-api";
 import { aiAuthRouter } from "../ai-auth-api";
 import { aiMemoryRouter } from "../ai-memory-api";
 import trialRouter from "../trial-api";
+import purchaseRouter from "../purchase-api";
 import swaggerUi from "swagger-ui-express";
 import { Server as SocketIOServer } from "socket.io";
 import fs from "fs";
@@ -62,6 +63,9 @@ async function startServer() {
   
   // Trial API
   app.use("/api/trial", trialRouter);
+  
+  // Purchase API (AI-native purchasing)
+  app.use("/api/vectors", purchaseRouter);
   
   // Swagger UI for API Documentation
   try {
