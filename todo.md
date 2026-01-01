@@ -198,3 +198,18 @@
 - [x] 实现POST /api/vectors/invoke端点（调用购买的向量）
 - [x] 实现GET /api/vectors/:id/pricing端点（获取定价）
 - [x] 实现GET /api/vectors/my-purchases端点（查询购买历史）
+
+## API密钥验证系统实现任务
+- [x] 创建apiKeys数据库表（schema）
+- [x] 实现API密钥生成函数（带前缀和校验和）
+- [x] 实现API密钥验证函数
+- [x] 更新AI注册端点生成真实API密钥
+- [x] 更新所有API端点使用真实密钥验证
+- [x] 实现密钥管理功能（生成、验证、列表、撤销、轮换）
+- [ ] 编写API密钥系统的测试用例
+
+## 插件市场提交任务
+- [x] 准备OpenAI Plugin Store提交材料和指南
+- [x] 准备Anthropic插件目录提交材料和指南
+- [ ] 验证插件发现端点可访问性
+- [ ] 测试AI代理自主注册流程

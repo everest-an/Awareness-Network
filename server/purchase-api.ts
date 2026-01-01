@@ -6,26 +6,34 @@
 import express from 'express';
 import Stripe from 'stripe';
 import { getDb } from './db.js';
-import { latentVectors, transactions, accessPermissions, users } from '../drizzle/schema.ts';
+import { latentVectors, transactions, accessPermissions } from '../drizzle/schema.ts';
 import { eq, and } from 'drizzle-orm';
 import crypto from 'crypto';
+import { validateApiKey as validateKey } from './api-key-manager.js';
 
 const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2025-12-15.clover' });
 
 /**
- * Authenticate API requests
+ * Authenticate API requests using real API key validation
  */
-function authenticateApiKey(req: express.Request, res: express.Response, next: express.NextFunction) {
+async function authenticateApiKey(req: express.Request, res: express.Response, next: express.NextFunction) {
   const apiKey = req.headers['x-api-key'] as string;
   
   if (!apiKey) {
     return res.status(401).json({ error: 'API key required' });
   }
   
-  // In production, validate API key against database
-  // For now, pass through (assuming AI agent registered via /api/ai/register)
-  (req as any).apiKey = apiKey;
+  const validation = await validateKey(apiKey);
+  
+  if (!validation.valid) {
+    return res.status(401).json({ error: validation.error || 'Invalid API key' });
+  }
+  
+  // Attach user info to request
+  (req as any).userId = validation.userId;
+  (req as any).apiKeyId = validation.keyId;
+  (req as any).permissions = validation.permissions;
   next();
 }
 
@@ -63,9 +71,8 @@ router.post('/purchase', authenticateApiKey, async (req, res) => {
       return res.status(400).json({ error: 'Vector is not available for purchase' });
     }
 
-    // Get buyer info (from API key - simplified for demo)
-    // In production, decode API key to get userId
-    const buyerId = 1; // Placeholder
+    // Get buyer info from authenticated API key
+    const buyerId = (req as any).userId;
     
     // Calculate fees
     const amount = parseFloat(vector.basePrice);
@@ -335,7 +342,7 @@ router.get('/my-purchases', authenticateApiKey, async (req, res) => {
     if (!db) {
       return res.status(500).json({ error: 'Database connection failed' });
     }
-    const buyerId = 1; // Placeholder - decode from API key in production
+    const buyerId = (req as any).userId;
     
     const purchases = await db
       .select({
