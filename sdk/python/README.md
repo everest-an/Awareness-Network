@@ -279,14 +279,22 @@ except Exception as e:
 
 MIT License - see LICENSE file for details
 
+## ✅ Recently Completed
+
+- [x] **Async/await support** - `AsyncAwarenessClient` with full async API
+- [x] **Streaming responses** - SSE support via `invoke_stream()`
+- [x] **Batch operations** - `batch_invoke()` for efficient multi-vector calls
+- [x] **Caching layer** - Built-in LRU cache for vector metadata
+- [x] **Type stubs** - `.pyi` files for better IDE support
+- [x] **PyPI package** - Ready to publish with `setup.py` and `pyproject.toml`
+
 ## 🚧 Roadmap
 
-- [ ] Async/await support
-- [ ] Streaming responses
-- [ ] Batch operations
-- [ ] Caching layer
-- [ ] Type stubs (.pyi files)
-- [ ] PyPI package
+- [ ] CLI tool (`awareness-cli`)
+- [ ] WebSocket support for real-time updates
+- [ ] Offline mode with local cache
+- [ ] GraphQL API support
+- [ ] Plugin system for custom transformations
 
 ## 🤝 Contributing
 
