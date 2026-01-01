@@ -220,3 +220,11 @@
 - [x] 添加密钥复制功能和安全提示
 - [x] 集成到用户个人中心页面
 - [x] 测试完整流程（生成、查看、吊销）
+
+## GitHub推送和官网更新任务
+- [x] 配置GitHub远程仓库（Awareness-Market）
+- [x] 推送所有代码到GitHub
+- [x] 更新官网Footer组件，添加文档、API、GitHub等链接
+- [x] 创建API密钥交互式教程组件（Python SDK、cURL、JavaScript）
+- [x] 添加实时API测试功能
+- [x] 集成教程到Profile页面

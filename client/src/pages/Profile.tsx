@@ -10,9 +10,10 @@ import { Separator } from "@/components/ui/separator";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { useState } from "react";
-import { User, Mail, Shield, Key, Bell, CreditCard } from "lucide-react";
+import { User, Mail, Shield, Key, Bell, CreditCard, BookOpen } from "lucide-react";
 import { useLocation } from "wouter";
 import { ApiKeyManager } from "@/components/ApiKeyManager";
+import { ApiTutorial } from "@/components/ApiTutorial";
 
 export default function Profile() {
   const { user, loading } = useAuth();
@@ -96,7 +97,7 @@ export default function Profile() {
 
         {/* Tabs */}
         <Tabs defaultValue="general" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="general">
               <User className="h-4 w-4 mr-2" />
               General
@@ -108,6 +109,10 @@ export default function Profile() {
             <TabsTrigger value="api">
               <Key className="h-4 w-4 mr-2" />
               API Keys
+            </TabsTrigger>
+            <TabsTrigger value="tutorial">
+              <BookOpen className="h-4 w-4 mr-2" />
+              API Tutorial
             </TabsTrigger>
             <TabsTrigger value="notifications">
               <Bell className="h-4 w-4 mr-2" />
@@ -192,6 +197,11 @@ export default function Profile() {
           {/* API Keys Tab */}
           <TabsContent value="api">
             <ApiKeyManager />
+          </TabsContent>
+
+          {/* API Tutorial Tab */}
+          <TabsContent value="tutorial">
+            <ApiTutorial />
           </TabsContent>
 
           {/* Notifications Tab */}
