@@ -9,6 +9,7 @@ import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
 import { invokeLLM } from "./_core/llm";
 import * as recommendationEngine from "./recommendation-engine";
+import { createApiKey, listApiKeys, revokeApiKey, deleteApiKey } from "./api-key-manager.js";
 
 // Helper to ensure user is a creator
 const creatorProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -41,6 +42,60 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         await db.updateUserRole(ctx.user.id, input.role);
         return { success: true };
+      }),
+  }),
+
+  // API Key Management
+  apiKeys: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      const keys = await listApiKeys(ctx.user.id);
+      return { keys };
+    }),
+    
+    create: protectedProcedure
+      .input(z.object({
+        name: z.string().min(1).max(255),
+        permissions: z.array(z.string()).optional(),
+        expiresInDays: z.number().positive().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const expiresAt = input.expiresInDays
+          ? new Date(Date.now() + input.expiresInDays * 24 * 60 * 60 * 1000)
+          : null;
+        
+        const result = await createApiKey({
+          userId: ctx.user.id,
+          name: input.name,
+          permissions: input.permissions || ['*'],
+          expiresAt,
+        });
+        
+        return {
+          success: true,
+          apiKey: result.key,
+          keyPrefix: result.keyPrefix,
+          message: 'API key created successfully. Store it securely - it won\'t be shown again.',
+        };
+      }),
+    
+    revoke: protectedProcedure
+      .input(z.object({ keyId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const success = await revokeApiKey(input.keyId, ctx.user.id);
+        if (!success) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'API key not found' });
+        }
+        return { success: true, message: 'API key revoked successfully' };
+      }),
+    
+    delete: protectedProcedure
+      .input(z.object({ keyId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const success = await deleteApiKey(input.keyId, ctx.user.id);
+        if (!success) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: 'API key not found' });
+        }
+        return { success: true, message: 'API key deleted successfully' };
       }),
   }),
 

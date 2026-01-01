@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { User, Mail, Shield, Key, Bell, CreditCard } from "lucide-react";
 import { useLocation } from "wouter";
+import { ApiKeyManager } from "@/components/ApiKeyManager";
 
 export default function Profile() {
   const { user, loading } = useAuth();
@@ -190,49 +191,7 @@ export default function Profile() {
 
           {/* API Keys Tab */}
           <TabsContent value="api">
-            <Card>
-              <CardHeader>
-                <CardTitle>API Keys</CardTitle>
-                <CardDescription>
-                  Manage your API keys for programmatic access
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <p className="text-sm text-muted-foreground">
-                    Use API keys to authenticate your applications
-                  </p>
-                  <Button onClick={handleGenerateApiKey}>Generate New Key</Button>
-                </div>
-                <Separator />
-                {apiKeysMutation.isLoading ? (
-                  <div className="text-center py-4">Loading API keys...</div>
-                ) : apiKeysMutation.data && apiKeysMutation.data.length > 0 ? (
-                  <div className="space-y-2">
-                    {apiKeysMutation.data.map((key: any) => (
-                      <div
-                        key={key.id}
-                        className="flex items-center justify-between p-3 border rounded-lg"
-                      >
-                        <div>
-                          <p className="font-medium">{key.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            Created {new Date(key.createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <Badge variant={key.isActive ? "default" : "secondary"}>
-                          {key.isActive ? "Active" : "Inactive"}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No API keys yet. Generate one to get started.
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <ApiKeyManager />
           </TabsContent>
 
           {/* Notifications Tab */}

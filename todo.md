@@ -213,3 +213,10 @@
 - [x] 准备Anthropic插件目录提交材料和指南
 - [ ] 验证插件发现端点可访问性
 - [ ] 测试AI代理自主注册流程
+
+## API密钥管理UI任务
+- [x] 创建tRPC端点：listApiKeys, createApiKey, revokeApiKey, deleteApiKey
+- [x] 创建ApiKeyManager组件（列表、生成、吊销、删除）
+- [x] 添加密钥复制功能和安全提示
+- [x] 集成到用户个人中心页面
+- [x] 测试完整流程（生成、查看、吊销）
