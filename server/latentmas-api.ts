@@ -13,6 +13,14 @@
 
 import { Router } from "express";
 import { z } from "zod";
+import {
+  alignVector,
+  transformDimension,
+  validateVector,
+  getSupportedModels,
+  cosineSimilarity,
+  euclideanDistance
+} from "./latentmas-core";
 
 const latentmasRouter = Router();
 
@@ -33,27 +41,37 @@ latentmasRouter.post("/align", async (req, res) => {
 
     const data = schema.parse(req.body);
 
-    // In a real implementation, this would:
-    // 1. Load the alignment matrix for source -> target models
-    // 2. Apply the transformation
-    // 3. Validate the aligned vector
-    //
-    // For now, we return a mock aligned vector
-    const alignedVector = data.source_vector.map(v => v * 1.1); // Mock transformation
+    // Validate input vector
+    const validation = validateVector(data.source_vector);
+    if (!validation.isValid) {
+      return res.status(400).json({
+        error: "Invalid source vector",
+        issues: validation.issues,
+        statistics: validation.statistics
+      });
+    }
+
+    // Perform real alignment
+    const result = alignVector(
+      data.source_vector,
+      data.source_model,
+      data.target_model,
+      data.alignment_method
+    );
 
     res.json({
       protocol: "LatentMAS/1.0",
-      aligned_vector: alignedVector,
-      source_dimension: data.source_vector.length,
-      target_dimension: alignedVector.length,
+      aligned_vector: result.alignedVector,
+      source_dimension: result.metadata.sourceDim,
+      target_dimension: result.metadata.targetDim,
       alignment_quality: {
-        cosine_similarity: 0.92,
-        euclidean_distance: 0.15,
-        confidence: 0.88,
+        cosine_similarity: result.quality.cosineSimilarity,
+        euclidean_distance: result.quality.euclideanDistance,
+        confidence: result.quality.confidence,
       },
       metadata: {
-        method: data.alignment_method,
-        processing_time_ms: 45,
+        method: result.metadata.method,
+        processing_time_ms: result.metadata.processingTimeMs,
       },
     });
   } catch (error: any) {
@@ -78,35 +96,35 @@ latentmasRouter.post("/transform", async (req, res) => {
 
     const data = schema.parse(req.body);
 
-    const sourceDim = data.vector.length;
-    const targetDim = data.target_dimension;
-
-    // Mock transformation
-    let transformedVector: number[];
-    if (targetDim > sourceDim) {
-      // Upsampling: pad with interpolated values
-      transformedVector = [...data.vector];
-      while (transformedVector.length < targetDim) {
-        const idx = Math.floor(Math.random() * sourceDim);
-        transformedVector.push(data.vector[idx] * 0.9);
-      }
-    } else {
-      // Downsampling: select top dimensions
-      transformedVector = data.vector.slice(0, targetDim);
+    // Validate input vector
+    const validation = validateVector(data.vector);
+    if (!validation.isValid) {
+      return res.status(400).json({
+        error: "Invalid input vector",
+        issues: validation.issues,
+        statistics: validation.statistics
+      });
     }
+
+    // Perform real transformation
+    const result = transformDimension(
+      data.vector,
+      data.target_dimension,
+      data.method
+    );
 
     res.json({
       protocol: "LatentMAS/1.0",
-      transformed_vector: transformedVector,
-      source_dimension: sourceDim,
-      target_dimension: targetDim,
+      transformed_vector: result.transformedVector,
+      source_dimension: result.metadata.sourceDim,
+      target_dimension: result.metadata.targetDim,
       transformation_quality: {
-        information_retention: targetDim >= sourceDim ? 1.0 : targetDim / sourceDim,
-        variance_explained: 0.95,
+        information_retention: result.quality.informationRetained,
+        reconstruction_error: result.quality.reconstructionError,
       },
       metadata: {
-        method: data.method,
-        processing_time_ms: 32,
+        method: result.metadata.method,
+        processing_time_ms: result.metadata.processingTimeMs,
       },
     });
   } catch (error: any) {
@@ -222,40 +240,58 @@ latentmasRouter.post("/validate", async (req, res) => {
 
     const data = schema.parse(req.body);
 
-    // Validation checks
-    const hasNaN = data.vector.some(v => isNaN(v));
-    const hasInf = data.vector.some(v => !isFinite(v));
-    const dimensionMatch = !data.expected_dimension || data.vector.length === data.expected_dimension;
-
-    // Calculate statistics
+    // Use real validation function
+    const validation = validateVector(data.vector, data.expected_dimension);
+    const stats = validation.statistics;
+    
+    // Calculate additional statistics
     const mean = data.vector.reduce((a, b) => a + b, 0) / data.vector.length;
     const variance = data.vector.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / data.vector.length;
     const stdDev = Math.sqrt(variance);
 
-    const isValid = !hasNaN && !hasInf && dimensionMatch;
-
     res.json({
       protocol: "LatentMAS/1.0",
-      valid: isValid,
+      valid: validation.isValid,
+      issues: validation.issues,
       checks: {
-        no_nan: !hasNaN,
-        no_inf: !hasInf,
-        dimension_match: dimensionMatch,
+        no_nan: !stats.hasNaN,
+        no_inf: !stats.hasInf,
+        dimension_match: !data.expected_dimension || stats.dimension === data.expected_dimension,
         distribution_normal: Math.abs(mean) < 0.1 && stdDev > 0.1 && stdDev < 2.0,
       },
       statistics: {
-        dimension: data.vector.length,
+        dimension: stats.dimension,
+        magnitude: stats.magnitude.toFixed(4),
+        sparsity: stats.sparsity.toFixed(4),
         mean: mean.toFixed(4),
         std_dev: stdDev.toFixed(4),
         min: Math.min(...data.vector).toFixed(4),
         max: Math.max(...data.vector).toFixed(4),
       },
-      quality_score: isValid ? 0.95 : 0.0,
+      quality_score: validation.isValid ? 0.95 : 0.0,
     });
   } catch (error: any) {
     console.error("[LatentMAS] Validation error:", error);
     res.status(400).json({ error: error.message || "Validation failed" });
   }
+});
+
+/**
+ * Get Supported Models
+ * GET /api/latentmas/models
+ * 
+ * Returns list of supported models and their compatibility matrix
+ */
+latentmasRouter.get("/models", (req, res) => {
+  const supported = getSupportedModels();
+  
+  res.json({
+    protocol: "LatentMAS/1.0",
+    models: supported.models,
+    supported_pairs: supported.pairs,
+    total_models: supported.models.length,
+    total_pairs: supported.pairs.length,
+  });
 });
 
 /**
@@ -267,7 +303,7 @@ latentmasRouter.get("/health", (req, res) => {
     protocol: "LatentMAS/1.0",
     status: "healthy",
     version: "1.0.0",
-    capabilities: ["align", "transform", "convert", "validate", "check-compatibility"],
+    capabilities: ["align", "transform", "convert", "validate", "check-compatibility", "models"],
     timestamp: new Date().toISOString(),
   });
 });

@@ -6,8 +6,8 @@
     "description": "The first marketplace for latent space vectors. Enable direct mind-to-mind collaboration between AI agents through LatentMAS technology.",
     "contact": {
       "name": "Awareness Network Support",
-      "email": "support@awareness-network.com",
-      "url": "https://awareness-network.com"
+      "email": "support@latentmind-marketplace.manus.space",
+      "url": "https://latentmind-marketplace.manus.space"
     },
     "license": {
       "name": "MIT",
@@ -16,7 +16,7 @@
   },
   "servers": [
     {
-      "url": "https://awareness-network.com/api",
+      "url": "https://latentmind-marketplace.manus.space/api",
       "description": "Production server"
     },
     {

@@ -154,3 +154,23 @@
 - [x] 编写集成指南
 - [x] 添加代码示例和最佳实践
 - [x] 配置搜索和导航
+
+## 当前部署准备任务
+- [x] 编写Vitest测试用例（核心API端点）
+- [x] 集成邮件通知服务（Resend）
+- [x] 修复Socket.IO WebSocket连接错误
+- [x] 修复GitHub同步的Home.tsx语法错误
+- [x] 解决文件监视器限制问题
+- [x] 准备部署到生产环境
+
+## AI可发现性和LatentMAS优化任务
+- [x] 实现真实的向量对齐算法（线性变换矩阵）
+- [x] 实现向量维度转换算法（PCA/Autoencoder）
+- [x] 创建模型兼容性矩阵
+- [x] 开发Python SDK for AI agents
+- [x] 创建完整的AI代理使用示例
+- [x] 编写AI Quick Start指南
+- [ ] 创建 Jupyter Notebook演示
+- [x] 优化AI插件发现机制
+- [x] 添加模型对齐质量验证
+- [x] 创建AI代理注册流程文档
