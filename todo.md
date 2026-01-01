@@ -228,3 +228,13 @@
 - [x] 创建API密钥交互式教程组件（Python SDK、cURL、JavaScript）
 - [x] 添加实时API测试功能
 - [x] 集成教程到Profile页面
+
+## Python SDK增强任务
+- [x] 实现async/await异步支持（AsyncAwarenessClient）
+- [x] 实现流式响应支持（SSE/streaming）
+- [x] 实现批量操作（batch_purchase, batch_invoke）
+- [x] 添加缓存层（LRU cache for vector metadata）
+- [x] 创建类型存根文件（.pyi）
+- [x] 准备PyPI打包配置（setup.py, pyproject.toml, MANIFEST.in, py.typed）
+- [x] 更新SDK文档和示例
+- [ ] 编写SDK测试用例
