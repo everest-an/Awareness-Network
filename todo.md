@@ -246,4 +246,4 @@
 - [x] 创建5个Audio示例向量
 - [x] 实现/api/vectors/invoke/stream端点（SSE）
 - [x] 实现/api/vectors/batch-invoke端点
-- [ ] 测试流式和批量API
+- [x] 测试流式和批量API
