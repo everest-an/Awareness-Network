@@ -361,3 +361,87 @@
 - [x] 删除routers.ts中未使用的qualityControl router
 - [x] 验证TypeScript编译通过（0错误）
 
+
+## LatentMAS V2.0 升级 - W矩阵标准化和KV-cache记忆交换
+
+### Phase 1: W矩阵标准规范和分发服务
+- [x] 定义WMatrixStandard接口和类型
+- [x] 实现多版本W矩阵生成器（W_gpt, W_llama, W_claude）
+- [x] 创建W矩阵分发服务（WMatrixService）
+- [x] 实现W矩阵版本管理和兼容性验证
+- [ ] 编写W矩阵单元测试
+
+### Phase 2: 数据库Schema扩展
+- [x] 创建memory_exchanges表（记忆交换记录）
+- [x] 创建reasoning_chains表（推理链市场）
+- [x] 扩展latent_vectors表支持vector_type和kv_cache_metadata
+- [x] 创建w_matrix_versions表（W矩阵版本管理）
+- [x] 执行数据库迁移（pnpm db:push）
+
+### Phase 3: KV-cache对齐算法和记忆交换API
+- [x] 定义KVCache标准格式接口
+- [x] 实现KV-cache对齐算法（使用W矩阵）
+- [x] 创建记忆交换业务逻辑模块（memory-exchange.ts）
+- [x] 实现memory router（publishMemory, purchaseMemory, browseMemories）
+- [x] 实现reasoningChains router（browse, publish, use）
+- [x] 实现wMatrix router（getSupportedModels, getModelSpec, alignKVCache）
+- [ ] 编写记忆交换API测试
+
+### Phase 4: 前端集成
+- [x] 创建推理链市场页面（ReasoningChainMarket.tsx）
+- [x] 创建W矩阵协议页面（WMatrixProtocol.tsx）
+- [x] 在首页添加V2.0功能入口
+- [x] 更新导航菜单和路由
+- [ ] 在向量类型中添加"推理链"选项
+- [ ] 更新向量上传页面支持KV-cache数据
+
+### Phase 5: 文档更新
+- [ ] 更新WHITEPAPER.md添加Section 3.5（KV-Cache Exchange）
+- [ ] 更新WHITEPAPER.md添加Section 4.3（Standardized W-Matrix）
+- [ ] 更新WHITEPAPER.md添加Section 7.3（Memory Market Economics）
+- [ ] 更新README.md添加V2.0特性说明
+- [ ] 更新AI_QUICK_START.md添加记忆交换示例
+- [ ] 创建W_MATRIX_SPEC.md（W矩阵技术规范文档）
+
+### Phase 6: 测试和部署
+- [ ] 运行所有vitest测试确保通过
+- [ ] 端到端测试记忆交换流程
+- [ ] 性能测试KV-cache对齐速度
+- [ ] 创建checkpoint
+- [ ] GitHub同步
+- [ ] 更新部署文档
+
+### V2.1 规划（后续版本）
+- [ ] 独立的记忆市场页面（/memory-market）
+- [ ] 推理链发布工具（/publish-reasoning-chain）
+- [ ] 记忆质量评估系统
+- [ ] 推理链可视化组件
+
+### V2.2 规划（后续版本）
+- [ ] 高级W矩阵优化（学习型W矩阵）
+- [ ] 记忆使用分析仪表板
+- [ ] 批量记忆交换API
+- [ ] 记忆缓存和预加载优化
+
+### 用户需求：扩展AI模型支持
+- [x] 添加Qwen系列模型（qwen-7b, qwen-14b, qwen-72b, qwen-2-7b, qwen-2-72b, qwen-2.5-7b, qwen-2.5-72b）
+- [x] 添加DeepSeek系列模型（deepseek-7b, deepseek-67b, deepseek-coder-7b, deepseek-coder-33b, deepseek-v2, deepseek-v2.5, deepseek-v3）
+- [x] 添加Yi系列模型（yi-6b, yi-34b, yi-1.5-9b, yi-1.5-34b）
+- [x] 添加Baichuan系列模型（baichuan-7b, baichuan-13b, baichuan2-7b, baichuan2-13b）
+- [x] 添加其他学术模型（phi-2, phi-3-mini/small/medium, internlm-7b/20b, internlm2-7b/20b, chatglm-6b, chatglm2-6b, chatglm3-6b, glm-4）
+- [x] 添加Cohere系列（command-r, command-r-plus）
+- [x] 添加xAI Grok系列（grok-1, grok-2）
+- [x] 添加更多OpenAI模型（gpt-4o, o1, o1-mini）
+- [x] 添加更多Claude模型（claude-3-haiku, claude-3.5-sonnet）
+- [x] 添加更多LLaMA模型（llama-2-70b, llama-3.1-8b/70b/405b）
+- [x] 添加更多Gemini模型（gemini-1.5-pro, gemini-1.5-flash）
+- [x] 添加更多Mistral模型（mixtral-8x22b, mistral-large）
+
+**总计支持 60+ AI模型，覆盖14个模型家族**
+
+### 用户需求：整合$AMEM代币经济学到白皮书
+- [x] 创建完整合并版白皮书WHITEPAPER_COMPLETE.md
+- [x] 添加ERC-6551 AI记忆确权方案
+- [x] 添加$AMEM代币分配模型和价值捕获机制
+- [x] 添加PID控制算法的动态定价公式
+- [x] 整合V1.0和V2.0内容为一个完整白皮书

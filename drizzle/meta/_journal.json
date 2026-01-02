@@ -64,6 +64,13 @@
       "when": 1767317837197,
       "tag": "0008_safe_master_mold",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1767375296836,
+      "tag": "0009_misty_frank_castle",
+      "breakpoints": true
     }
   ]
 }

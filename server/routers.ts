@@ -14,6 +14,7 @@ import { createApiKey, listApiKeys, revokeApiKey, deleteApiKey } from "./api-key
 import * as blogDb from "./blog-db";
 import { getDb } from "./db";
 import { reviews, latentVectors } from "../drizzle/schema";
+import * as latentmas from "./latentmas";
 
 // Helper to ensure user is a creator
 const creatorProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -828,6 +829,269 @@ export const appRouter = router({
         recentTransactions: transactions.slice(0, 10),
       };
     }),
+  }),
+
+  // LatentMAS V2.0 - Memory Exchange and W-Matrix Protocol
+  memory: router({
+    // Browse available memories for purchase
+    browse: publicProcedure
+      .input(z.object({
+        memoryType: z.enum(["kv_cache", "reasoning_chain", "long_term_memory"]).optional(),
+        sourceModel: z.string().optional(),
+        minQuality: z.number().min(0).max(1).optional(),
+        maxPrice: z.number().positive().optional(),
+        limit: z.number().positive().default(20),
+        offset: z.number().nonnegative().default(0),
+      }))
+      .query(async ({ input }) => {
+        return await latentmas.browseMemories({
+          memoryType: input.memoryType,
+          sourceModel: input.sourceModel as latentmas.ModelType | undefined,
+          minQuality: input.minQuality,
+          maxPrice: input.maxPrice,
+          limit: input.limit,
+          offset: input.offset,
+        });
+      }),
+
+    // Publish a memory for sale
+    publish: creatorProcedure
+      .input(z.object({
+        memoryType: z.enum(["kv_cache", "reasoning_chain", "long_term_memory"]),
+        kvCacheData: z.object({
+          sourceModel: z.string(),
+          keys: z.array(z.any()),
+          values: z.array(z.any()),
+          attentionMask: z.array(z.any()).optional(),
+          positionEncodings: z.array(z.any()).optional(),
+          metadata: z.object({
+            sequenceLength: z.number(),
+            contextDescription: z.string(),
+            tokenCount: z.number(),
+            generatedAt: z.date().optional(),
+          }),
+        }),
+        price: z.number().positive(),
+        description: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        return await latentmas.publishMemory({
+          sellerId: ctx.user.id,
+          memoryType: input.memoryType,
+          kvCacheData: input.kvCacheData as latentmas.KVCache,
+          price: input.price,
+          description: input.description,
+        });
+      }),
+
+    // Purchase and align memory to target model
+    purchase: protectedProcedure
+      .input(z.object({
+        memoryId: z.number(),
+        targetModel: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        return await latentmas.purchaseMemory({
+          memoryId: input.memoryId,
+          buyerId: ctx.user.id,
+          targetModel: input.targetModel as latentmas.ModelType,
+        });
+      }),
+
+    // Get user's memory exchange history
+    history: protectedProcedure
+      .input(z.object({
+        role: z.enum(["seller", "buyer", "both"]).default("both"),
+        limit: z.number().positive().default(50),
+      }))
+      .query(async ({ ctx, input }) => {
+        return await latentmas.getUserMemoryHistory({
+          userId: ctx.user.id,
+          role: input.role,
+          limit: input.limit,
+        });
+      }),
+
+    // Get memory exchange statistics
+    stats: publicProcedure.query(async () => {
+      return await latentmas.getMemoryExchangeStats();
+    }),
+  }),
+
+  // Reasoning Chains Marketplace
+  reasoningChains: router({
+    // Browse reasoning chains
+    browse: publicProcedure
+      .input(z.object({
+        category: z.string().optional(),
+        sourceModel: z.string().optional(),
+        minQuality: z.number().min(0).max(1).optional(),
+        maxPrice: z.number().positive().optional(),
+        limit: z.number().positive().default(20),
+        offset: z.number().nonnegative().default(0),
+      }))
+      .query(async ({ input }) => {
+        return await latentmas.browseReasoningChains({
+          category: input.category,
+          sourceModel: input.sourceModel as latentmas.ModelType | undefined,
+          minQuality: input.minQuality,
+          maxPrice: input.maxPrice,
+          limit: input.limit,
+          offset: input.offset,
+        });
+      }),
+
+    // Publish a reasoning chain
+    publish: creatorProcedure
+      .input(z.object({
+        chainName: z.string().min(1),
+        description: z.string().min(1),
+        category: z.string().min(1),
+        inputExample: z.any(),
+        outputExample: z.any(),
+        kvCacheSnapshot: z.object({
+          sourceModel: z.string(),
+          keys: z.array(z.any()),
+          values: z.array(z.any()),
+          attentionMask: z.array(z.any()).optional(),
+          positionEncodings: z.array(z.any()).optional(),
+          metadata: z.object({
+            sequenceLength: z.number(),
+            contextDescription: z.string(),
+            tokenCount: z.number(),
+            generatedAt: z.date().optional(),
+          }),
+        }),
+        pricePerUse: z.number().positive(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        return await latentmas.publishReasoningChain({
+          creatorId: ctx.user.id,
+          chainName: input.chainName,
+          description: input.description,
+          category: input.category,
+          inputExample: input.inputExample,
+          outputExample: input.outputExample,
+          kvCacheSnapshot: input.kvCacheSnapshot as latentmas.KVCache,
+          pricePerUse: input.pricePerUse,
+        });
+      }),
+
+    // Use (purchase) a reasoning chain
+    use: protectedProcedure
+      .input(z.object({
+        chainId: z.number(),
+        targetModel: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        return await latentmas.useReasoningChain({
+          chainId: input.chainId,
+          userId: ctx.user.id,
+          targetModel: input.targetModel as latentmas.ModelType,
+        });
+      }),
+  }),
+
+  // W-Matrix Protocol
+  wMatrix: router({
+    // Get supported models
+    getSupportedModels: publicProcedure.query(() => {
+      return latentmas.getSupportedModels();
+    }),
+
+    // Get model specification
+    getModelSpec: publicProcedure
+      .input(z.object({ model: z.string() }))
+      .query(({ input }) => {
+        return latentmas.getModelSpec(input.model as latentmas.ModelType);
+      }),
+
+    // Check model compatibility
+    checkCompatibility: publicProcedure
+      .input(z.object({
+        model1: z.string(),
+        model2: z.string(),
+      }))
+      .query(({ input }) => {
+        return {
+          compatible: latentmas.areModelsCompatible(
+            input.model1 as latentmas.ModelType,
+            input.model2 as latentmas.ModelType
+          ),
+        };
+      }),
+
+    // Get current W-Matrix version
+    getCurrentVersion: publicProcedure.query(() => {
+      return { version: latentmas.WMatrixService.getCurrentVersion() };
+    }),
+
+    // Get available W-Matrix versions
+    getVersions: publicProcedure.query(async () => {
+      return await latentmas.getWMatrixVersions();
+    }),
+
+    // Generate W-Matrix for model pair
+    generate: publicProcedure
+      .input(z.object({
+        sourceModel: z.string(),
+        targetModel: z.string(),
+        method: z.enum(["orthogonal", "learned", "hybrid"]).default("orthogonal"),
+      }))
+      .query(({ input }) => {
+        const wMatrix = latentmas.WMatrixService.getWMatrix(
+          input.sourceModel as latentmas.ModelType,
+          input.targetModel as latentmas.ModelType,
+          latentmas.WMatrixService.getCurrentVersion(),
+          input.method
+        );
+        // Return without the full transformation rules (too large)
+        return {
+          version: wMatrix.version,
+          sourceModel: wMatrix.sourceModel,
+          targetModel: wMatrix.targetModel,
+          unifiedDimension: wMatrix.unifiedDimension,
+          method: wMatrix.method,
+          kvCacheCompatibility: wMatrix.kvCacheCompatibility,
+          qualityMetrics: wMatrix.qualityMetrics,
+          metadata: wMatrix.metadata,
+        };
+      }),
+
+    // Align KV-cache to target model
+    alignKVCache: protectedProcedure
+      .input(z.object({
+        kvCache: z.object({
+          sourceModel: z.string(),
+          keys: z.array(z.any()),
+          values: z.array(z.any()),
+          attentionMask: z.array(z.any()).optional(),
+          positionEncodings: z.array(z.any()).optional(),
+          metadata: z.object({
+            sequenceLength: z.number(),
+            contextDescription: z.string(),
+            tokenCount: z.number(),
+            generatedAt: z.date().optional(),
+          }),
+        }),
+        targetModel: z.string(),
+        wMatrixVersion: z.string().optional(),
+      }))
+      .mutation(({ input }) => {
+        const aligned = latentmas.WMatrixService.alignKVCache(
+          input.kvCache as latentmas.KVCache,
+          input.targetModel as latentmas.ModelType,
+          input.wMatrixVersion
+        );
+        return {
+          targetModel: aligned.targetModel,
+          wMatrixVersion: aligned.wMatrixVersion,
+          alignmentQuality: aligned.alignmentQuality,
+          metadata: aligned.metadata,
+          // Note: Full KV-cache data would be returned in production
+          // Omitted here for response size
+        };
+      }),
   }),
 });
 

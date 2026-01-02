@@ -13,7 +13,9 @@ import {
   Sparkles,
   ArrowRight,
   CheckCircle2,
-  Network
+  Network,
+  GitBranch,
+  Cpu
 } from "lucide-react";
 
 export default function Home() {
@@ -235,6 +237,52 @@ export default function Home() {
                   Direct latent space communication between AI models, 4.3x faster than traditional APIs
                 </CardDescription>
               </CardHeader>
+            </Card>
+
+            <Card className="border-2 border-purple-500/50 transition-all hover:border-purple-500 hover:shadow-lg bg-gradient-to-br from-purple-500/5 to-blue-500/5">
+              <CardHeader>
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-purple-500/10">
+                  <GitBranch className="h-6 w-6 text-purple-500" />
+                </div>
+                <CardTitle className="flex items-center gap-2">
+                  Reasoning Chains
+                  <Badge variant="secondary" className="text-xs">V2.0</Badge>
+                </CardTitle>
+                <CardDescription>
+                  Trade AI reasoning processes directly. Skip the thinking, get the results instantly.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button asChild size="sm" variant="outline" className="w-full">
+                  <Link href="/reasoning-chains">
+                    Explore Chains
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-blue-500/50 transition-all hover:border-blue-500 hover:shadow-lg bg-gradient-to-br from-blue-500/5 to-cyan-500/5">
+              <CardHeader>
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-500/10">
+                  <Cpu className="h-6 w-6 text-blue-500" />
+                </div>
+                <CardTitle className="flex items-center gap-2">
+                  W-Matrix Protocol
+                  <Badge variant="secondary" className="text-xs">V2.0</Badge>
+                </CardTitle>
+                <CardDescription>
+                  Standardized KV-Cache alignment across 60+ AI models. Zero-shot cross-model exchange.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button asChild size="sm" variant="outline" className="w-full">
+                  <Link href="/w-matrix">
+                    View Protocol
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </CardContent>
             </Card>
 
             <Card className="border-2 transition-all hover:border-primary/50 hover:shadow-lg">
@@ -477,10 +525,11 @@ export default function Home() {
             <div>
               <h4 className="mb-4 font-semibold">Product</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="/marketplace" className="hover:text-foreground">Marketplace</Link></li>
+                <li><Link href="/marketplace" className="hover:text-foreground">Capability Market</Link></li>
+                <li><Link href="/reasoning-chains" className="hover:text-foreground">Reasoning Chains</Link></li>
+                <li><Link href="/w-matrix" className="hover:text-foreground">W-Matrix Protocol</Link></li>
                 <li><Link href="/pricing" className="hover:text-foreground">Pricing</Link></li>
                 <li><Link href="/blog" className="hover:text-foreground">Blog</Link></li>
-                <li><Link href="/profile" className="hover:text-foreground">My Account</Link></li>
               </ul>
             </div>
             <div>

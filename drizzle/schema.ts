@@ -41,6 +41,10 @@ export const latentVectors = mysqlTable("latent_vectors", {
   averageRating: decimal("average_rating", { precision: 3, scale: 2 }).default("0.00"),
   reviewCount: int("review_count").default(0).notNull(),
   freeTrialCalls: int("free_trial_calls").default(3).notNull(), // Number of free trial calls per user
+  // V2.0: KV-cache support
+  vectorType: mysqlEnum("vector_type", ["embedding", "kv_cache", "reasoning_chain"]).default("embedding").notNull(),
+  kvCacheMetadata: text("kv_cache_metadata"), // JSON: {sourceModel, sequenceLength, tokenCount, contextDescription}
+  wMatrixVersion: varchar("w_matrix_version", { length: 20 }), // e.g., "1.0.0"
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => ({
@@ -599,3 +603,106 @@ export const vectorQualityChecksRelations = relations(vectorQualityChecks, ({ on
 
 export type VectorQualityCheck = typeof vectorQualityChecks.$inferSelect;
 export type InsertVectorQualityCheck = typeof vectorQualityChecks.$inferInsert;
+
+/**
+ * LatentMAS V2.0: Memory exchanges (KV-cache trading records)
+ */
+export const memoryExchanges = mysqlTable("memory_exchanges", {
+  id: int("id").autoincrement().primaryKey(),
+  sellerId: int("seller_id").notNull(),
+  buyerId: int("buyer_id").notNull(),
+  memoryType: mysqlEnum("memory_type", ["kv_cache", "reasoning_chain", "long_term_memory"]).notNull(),
+  kvCacheData: text("kv_cache_data"), // JSON: serialized KVCache object
+  wMatrixVersion: varchar("w_matrix_version", { length: 20 }), // e.g., "1.0.0"
+  sourceModel: varchar("source_model", { length: 50 }), // e.g., "gpt-4", "llama-3-8b"
+  targetModel: varchar("target_model", { length: 50 }), // Model it was aligned to
+  contextLength: int("context_length"),
+  tokenCount: int("token_count"),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  qualityScore: decimal("quality_score", { precision: 3, scale: 2 }), // 0.00-1.00
+  alignmentQuality: text("alignment_quality"), // JSON: {cosineSimilarity, euclideanDistance, informationRetention, confidence}
+  status: mysqlEnum("status", ["pending", "completed", "failed"]).default("pending").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  sellerIdx: index("seller_idx").on(table.sellerId),
+  buyerIdx: index("buyer_idx").on(table.buyerId),
+  memoryTypeIdx: index("memory_type_idx").on(table.memoryType),
+  statusIdx: index("status_idx").on(table.status),
+}));
+
+export const memoryExchangesRelations = relations(memoryExchanges, ({ one }) => ({
+  seller: one(users, {
+    fields: [memoryExchanges.sellerId],
+    references: [users.id],
+  }),
+  buyer: one(users, {
+    fields: [memoryExchanges.buyerId],
+    references: [users.id],
+  }),
+}));
+
+export type MemoryExchange = typeof memoryExchanges.$inferSelect;
+export type InsertMemoryExchange = typeof memoryExchanges.$inferInsert;
+
+/**
+ * LatentMAS V2.0: Reasoning chains marketplace
+ */
+export const reasoningChains = mysqlTable("reasoning_chains", {
+  id: int("id").autoincrement().primaryKey(),
+  creatorId: int("creator_id").notNull(),
+  chainName: varchar("chain_name", { length: 255 }).notNull(),
+  description: text("description").notNull(),
+  category: varchar("category", { length: 100 }).notNull(), // e.g., "math", "coding", "analysis"
+  inputExample: text("input_example"), // JSON: example input that triggers this chain
+  outputExample: text("output_example"), // JSON: example output produced
+  kvCacheSnapshot: text("kv_cache_snapshot"), // JSON: serialized KVCache of the reasoning process
+  sourceModel: varchar("source_model", { length: 50 }).notNull(), // Model that generated this chain
+  wMatrixVersion: varchar("w_matrix_version", { length: 20 }), // Compatible W-Matrix version
+  stepCount: int("step_count"), // Number of reasoning steps
+  avgQuality: decimal("avg_quality", { precision: 3, scale: 2 }).default("0.00"), // Average user rating
+  reviewCount: int("review_count").default(0).notNull(),
+  pricePerUse: decimal("price_per_use", { precision: 10, scale: 2 }).notNull(),
+  usageCount: int("usage_count").default(0).notNull(),
+  totalRevenue: decimal("total_revenue", { precision: 12, scale: 2 }).default("0.00").notNull(),
+  status: mysqlEnum("status", ["draft", "active", "inactive"]).default("draft").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  creatorIdx: index("creator_idx").on(table.creatorId),
+  categoryIdx: index("category_idx").on(table.category),
+  statusIdx: index("status_idx").on(table.status),
+}));
+
+export const reasoningChainsRelations = relations(reasoningChains, ({ one }) => ({
+  creator: one(users, {
+    fields: [reasoningChains.creatorId],
+    references: [users.id],
+  }),
+}));
+
+export type ReasoningChain = typeof reasoningChains.$inferSelect;
+export type InsertReasoningChain = typeof reasoningChains.$inferInsert;
+
+/**
+ * LatentMAS V2.0: W-Matrix versions registry
+ */
+export const wMatrixVersions = mysqlTable("w_matrix_versions", {
+  id: int("id").autoincrement().primaryKey(),
+  version: varchar("version", { length: 20 }).notNull().unique(), // e.g., "1.0.0"
+  sourceModel: varchar("source_model", { length: 50 }).notNull(),
+  targetModel: varchar("target_model", { length: 50 }).notNull(),
+  method: mysqlEnum("method", ["orthogonal", "learned", "hybrid"]).notNull(),
+  unifiedDimension: int("unified_dimension").notNull(),
+  qualityMetrics: text("quality_metrics"), // JSON: {expectedQuality, informationRetention, computationalCost}
+  transformationRules: text("transformation_rules"), // JSON: serialized transformation rules
+  isActive: boolean("is_active").default(true).notNull(),
+  description: text("description"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  versionIdx: index("version_idx").on(table.version),
+  modelPairIdx: index("model_pair_idx").on(table.sourceModel, table.targetModel),
+  isActiveIdx: index("is_active_idx").on(table.isActive),
+}));
+
+export type WMatrixVersion = typeof wMatrixVersions.$inferSelect;
+export type InsertWMatrixVersion = typeof wMatrixVersions.$inferInsert;
