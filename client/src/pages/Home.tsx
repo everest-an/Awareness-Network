@@ -479,6 +479,7 @@ export default function Home() {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link href="/marketplace" className="hover:text-foreground">Marketplace</Link></li>
                 <li><Link href="/pricing" className="hover:text-foreground">Pricing</Link></li>
+                <li><Link href="/blog" className="hover:text-foreground">Blog</Link></li>
                 <li><Link href="/profile" className="hover:text-foreground">My Account</Link></li>
               </ul>
             </div>

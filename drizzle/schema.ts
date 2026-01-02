@@ -409,3 +409,37 @@ export const abTestAssignments = mysqlTable("ab_test_assignments", {
 
 export type AbTestAssignment = typeof abTestAssignments.$inferSelect;
 export type InsertAbTestAssignment = typeof abTestAssignments.$inferInsert;
+
+/**
+ * Blog posts for platform updates and AI technology articles
+ */
+export const blogPosts = mysqlTable("blog_posts", {
+  id: int("id").autoincrement().primaryKey(),
+  authorId: int("author_id").notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  excerpt: text("excerpt"), // Short summary
+  content: text("content").notNull(), // Markdown content
+  coverImage: text("cover_image"), // S3 URL
+  tags: text("tags"), // JSON array of tags
+  category: varchar("category", { length: 100 }), // e.g., "platform-updates", "ai-technology", "tutorials"
+  status: mysqlEnum("status", ["draft", "published", "archived"]).default("draft").notNull(),
+  viewCount: int("view_count").default(0).notNull(),
+  publishedAt: timestamp("published_at"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  slugIdx: index("slug_idx").on(table.slug),
+  statusIdx: index("status_idx").on(table.status),
+  publishedAtIdx: index("published_at_idx").on(table.publishedAt),
+}));
+
+export const blogPostsRelations = relations(blogPosts, ({ one }) => ({
+  author: one(users, {
+    fields: [blogPosts.authorId],
+    references: [users.id],
+  }),
+}));
+
+export type BlogPost = typeof blogPosts.$inferSelect;
+export type InsertBlogPost = typeof blogPosts.$inferInsert;

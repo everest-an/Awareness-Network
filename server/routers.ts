@@ -10,6 +10,7 @@ import { nanoid } from "nanoid";
 import { invokeLLM } from "./_core/llm";
 import * as recommendationEngine from "./recommendation-engine";
 import { createApiKey, listApiKeys, revokeApiKey, deleteApiKey } from "./api-key-manager.js";
+import * as blogDb from "./blog-db";
 
 // Helper to ensure user is a creator
 const creatorProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -477,6 +478,116 @@ export const appRouter = router({
 
         await db.upsertUserPreferences(ctx.user.id, updates);
         return { success: true };
+      }),
+  }),
+
+  // Blog Posts
+  blog: router({
+    // List blog posts (public)
+    list: publicProcedure
+      .input(z.object({
+        status: z.enum(["draft", "published", "archived"]).optional(),
+        category: z.string().optional(),
+        search: z.string().optional(),
+        limit: z.number().default(20),
+        offset: z.number().default(0),
+      }))
+      .query(async ({ input }) => {
+        // Only show published posts to non-admin users
+        const status = input.status || "published";
+        return await blogDb.listBlogPosts({ ...input, status });
+      }),
+
+    // Get blog post by slug (public)
+    getBySlug: publicProcedure
+      .input(z.object({ slug: z.string() }))
+      .query(async ({ input }) => {
+        const post = await blogDb.getBlogPostBySlug(input.slug);
+        if (post && post.status === "published") {
+          await blogDb.incrementBlogPostViews(post.id);
+        }
+        return post;
+      }),
+
+    // Get blog post by ID (admin only)
+    getById: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return await blogDb.getBlogPostById(input.id);
+      }),
+
+    // Create blog post (admin only)
+    create: adminProcedure
+      .input(z.object({
+        title: z.string().min(1),
+        slug: z.string().min(1),
+        excerpt: z.string().optional(),
+        content: z.string().min(1),
+        coverImage: z.string().optional(),
+        tags: z.array(z.string()).optional(),
+        category: z.string().optional(),
+        status: z.enum(["draft", "published", "archived"]).default("draft"),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const data: any = {
+          ...input,
+          authorId: ctx.user.id,
+          tags: input.tags ? JSON.stringify(input.tags) : null,
+          publishedAt: input.status === "published" ? new Date() : null,
+        };
+        return await blogDb.createBlogPost(data);
+      }),
+
+    // Update blog post (admin only)
+    update: adminProcedure
+      .input(z.object({
+        id: z.number(),
+        title: z.string().optional(),
+        slug: z.string().optional(),
+        excerpt: z.string().optional(),
+        content: z.string().optional(),
+        coverImage: z.string().optional(),
+        tags: z.array(z.string()).optional(),
+        category: z.string().optional(),
+        status: z.enum(["draft", "published", "archived"]).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...updates } = input;
+        const data: any = { ...updates };
+        
+        if (updates.tags) {
+          data.tags = JSON.stringify(updates.tags);
+        }
+        
+        // Set publishedAt when publishing
+        if (updates.status === "published") {
+          const existing = await blogDb.getBlogPostById(id);
+          if (existing && !existing.publishedAt) {
+            data.publishedAt = new Date();
+          }
+        }
+        
+        return await blogDb.updateBlogPost(id, data);
+      }),
+
+    // Delete blog post (admin only)
+    delete: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await blogDb.deleteBlogPost(input.id);
+        return { success: true };
+      }),
+
+    // Get categories
+    getCategories: publicProcedure.query(async () => {
+      return await blogDb.getBlogCategories();
+    }),
+
+    // Get post count
+    getCount: adminProcedure
+      .input(z.object({ status: z.enum(["draft", "published", "archived"]).optional() }))
+      .query(async ({ input }) => {
+        return await blogDb.getBlogPostCount(input.status);
       }),
   }),
 

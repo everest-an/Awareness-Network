@@ -43,6 +43,13 @@
       "when": 1766960830906,
       "tag": "0005_dashing_rictor",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1767315009498,
+      "tag": "0006_cooing_true_believers",
+      "breakpoints": true
     }
   ]
 }
