@@ -116,3 +116,4 @@ ai-service/__pycache__/
 __pycache__/
 .vercel
 .browser_data_dir
+.browser_data_dir/
