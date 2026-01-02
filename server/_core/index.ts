@@ -14,6 +14,7 @@ import { aiAuthRouter } from "../ai-auth-api";
 import { aiMemoryRouter } from "../ai-memory-api";
 import trialRouter from "../trial-api";
 import purchaseRouter from "../purchase-api";
+import streamingRouter from "../streaming-api";
 import swaggerUi from "swagger-ui-express";
 import { Server as SocketIOServer } from "socket.io";
 import fs from "fs";
@@ -66,6 +67,9 @@ async function startServer() {
   
   // Purchase API (AI-native purchasing)
   app.use("/api/vectors", purchaseRouter);
+  
+  // Streaming and Batch API
+  app.use("/api/vectors", streamingRouter);
   
   // Swagger UI for API Documentation
   try {

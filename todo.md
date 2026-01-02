@@ -238,3 +238,12 @@
 - [x] 准备PyPI打包配置（setup.py, pyproject.toml, MANIFEST.in, py.typed）
 - [x] 更新SDK文档和示例
 - [ ] 编写SDK测试用例
+
+## PyPI发布和API完善任务
+- [x] 准备PyPI发布指南和脚本（需要本地环境和PyPI账号）
+- [x] 创建5个NLP示例向量
+- [x] 创建5个Vision示例向量
+- [x] 创建5个Audio示例向量
+- [x] 实现/api/vectors/invoke/stream端点（SSE）
+- [x] 实现/api/vectors/batch-invoke端点
+- [ ] 测试流式和批量API
