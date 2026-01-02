@@ -829,7 +829,6 @@ export const appRouter = router({
       };
     }),
   }),
-  }),
   // Quality Control & Moderation
   qualityControl: router({
     // Report a vector
