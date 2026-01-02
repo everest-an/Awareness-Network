@@ -254,3 +254,21 @@
 - [x] 编写Python SDK单元测试（同步、异步、流式、批量）
 - [x] 创建网站SDK教程页面（/docs/sdk）
 - [x] 完善网页尾部链接（SDK Documentation、API Reference、Whitepaper、GitHub、Python SDK）
+
+## Footer链接修复任务
+- [x] 检查所有Footer链接
+- [x] 创建/marketplace页面（已存在）
+- [x] 创建/pricing页面
+- [x] 创建/privacy页面
+- [x] 创建/terms页面
+- [x] 创建/about页面
+
+## 博客/资讯板块任务
+- [ ] 创建blogPosts数据库表（标题、内容、作者、标签、状态、发布时间）
+- [ ] 实现博客管理tRPC端点（创建、编辑、删除、发布）
+- [ ] 创建博客管理界面（管理员专用）
+- [ ] 创建博客列表页面（/blog）
+- [ ] 创建博客详情页面（/blog/:slug）
+- [ ] 实现Markdown渲染和代码高亮
+- [ ] 实现RSS订阅功能（/blog/rss.xml）
+- [ ] 添加博客到导航栏和Footer

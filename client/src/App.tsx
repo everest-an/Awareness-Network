@@ -14,6 +14,10 @@ import ConsumerDashboard from "./pages/ConsumerDashboard";
 import Profile from "./pages/Profile";
 import Subscriptions from "./pages/Subscriptions";
 import SdkDocs from "./pages/SdkDocs";
+import Pricing from "./pages/Pricing";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import About from "./pages/About";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -28,6 +32,10 @@ function Router() {
       <Route path="/profile" component={Profile} />
        <Route path="/subscriptions" component={Subscriptions} />
       <Route path="/docs/sdk" component={SdkDocs} />
+      <Route path="/pricing" component={Pricing} />
+      <Route path="/privacy" component={Privacy} />
+      <Route path="/terms" component={Terms} />
+      <Route path="/about" component={About} />
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
