@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
@@ -11,6 +12,8 @@ import { invokeLLM } from "./_core/llm";
 import * as recommendationEngine from "./recommendation-engine";
 import { createApiKey, listApiKeys, revokeApiKey, deleteApiKey } from "./api-key-manager.js";
 import * as blogDb from "./blog-db";
+import { getDb } from "./db";
+import { reviews, latentVectors } from "../drizzle/schema";
 
 // Helper to ensure user is a creator
 const creatorProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -224,6 +227,47 @@ export const appRouter = router({
           successRate: callLogs.filter(log => log.success).length / (callLogs.length || 1),
         };
       }),
+
+    // Invoke vector (execute purchased capability)
+    invoke: protectedProcedure
+      .input(z.object({
+        vectorId: z.number(),
+        inputData: z.any(),
+        options: z.object({
+          temperature: z.number().optional(),
+          maxTokens: z.number().optional(),
+          alignToModel: z.string().optional(),
+        }).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { invokeVector } = await import("./vector-invocation");
+        return await invokeVector(ctx.user.id, input);
+      }),
+
+    // Get invocation history
+    invocationHistory: protectedProcedure
+      .input(z.object({
+        vectorId: z.number().optional(),
+        limit: z.number().default(50),
+        offset: z.number().default(0),
+      }))
+      .query(async ({ ctx, input }) => {
+        const { getInvocationHistory } = await import("./vector-invocation");
+        return await getInvocationHistory(ctx.user.id, input);
+      }),
+
+    // Get invocation stats (creator view)
+    invocationStats: creatorProcedure
+      .input(z.object({ vectorId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const vector = await db.getLatentVectorById(input.vectorId);
+        if (!vector || vector.creatorId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+
+        const { getVectorInvocationStats } = await import("./vector-invocation");
+        return await getVectorInvocationStats(input.vectorId);
+      }),
   }),
 
   // Transactions
@@ -410,9 +454,159 @@ export const appRouter = router({
 
     // Get vector reviews
     getByVector: publicProcedure
-      .input(z.object({ vectorId: z.number() }))
+      .input(z.object({ 
+        vectorId: z.number(),
+        sortBy: z.enum(["newest", "oldest", "highest", "lowest"]).default("newest"),
+        limit: z.number().default(20),
+        offset: z.number().default(0),
+      }))
       .query(async ({ input }) => {
         return await db.getVectorReviews(input.vectorId);
+      }),
+
+    // Get user's reviews
+    myReviews: protectedProcedure.query(async ({ ctx }) => {
+      const db_instance = await getDb();
+      if (!db_instance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      
+      const userReviews = await db_instance
+        .select({
+          review: reviews,
+          vector: {
+            id: latentVectors.id,
+            title: latentVectors.title,
+            category: latentVectors.category,
+          }
+        })
+        .from(reviews)
+        .leftJoin(latentVectors, eq(reviews.vectorId, latentVectors.id))
+        .where(eq(reviews.userId, ctx.user.id))
+        .orderBy(desc(reviews.createdAt));
+      
+      return userReviews;
+    }),
+
+    // Update review
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        rating: z.number().min(1).max(5).optional(),
+        comment: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const db_instance = await getDb();
+        if (!db_instance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+        // Check ownership
+        const [review] = await db_instance
+          .select()
+          .from(reviews)
+          .where(eq(reviews.id, input.id))
+          .limit(1);
+
+        if (!review || review.userId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+
+        const updates: any = {};
+        if (input.rating !== undefined) updates.rating = input.rating;
+        if (input.comment !== undefined) updates.comment = input.comment;
+
+        await db_instance
+          .update(reviews)
+          .set(updates)
+          .where(eq(reviews.id, input.id));
+
+        return { success: true };
+      }),
+
+    // Delete review
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const db_instance = await getDb();
+        if (!db_instance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+        // Check ownership
+        const [review] = await db_instance
+          .select()
+          .from(reviews)
+          .where(eq(reviews.id, input.id))
+          .limit(1);
+
+        if (!review || review.userId !== ctx.user.id) {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+
+        await db_instance
+          .delete(reviews)
+          .where(eq(reviews.id, input.id));
+
+        return { success: true };
+      }),
+
+    // Get review statistics for a vector
+    getStats: publicProcedure
+      .input(z.object({ vectorId: z.number() }))
+      .query(async ({ input }) => {
+        const db_instance = await getDb();
+        if (!db_instance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+        const vectorReviews = await db_instance
+          .select()
+          .from(reviews)
+          .where(eq(reviews.vectorId, input.vectorId));
+
+        const totalReviews = vectorReviews.length;
+        const averageRating = totalReviews > 0
+          ? vectorReviews.reduce((sum: number, r: any) => sum + r.rating, 0) / totalReviews
+          : 0;
+
+        const ratingDistribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+        vectorReviews.forEach((r: any) => {
+          ratingDistribution[r.rating as keyof typeof ratingDistribution]++;
+        });
+
+        const verifiedPurchases = vectorReviews.filter((r: any) => r.isVerifiedPurchase).length;
+
+        return {
+          totalReviews,
+          averageRating,
+          ratingDistribution,
+          verifiedPurchases,
+          verifiedPercentage: totalReviews > 0 ? (verifiedPurchases / totalReviews) * 100 : 0,
+        };
+      }),
+  }),
+
+  // Creator Dashboard
+  creatorDashboard: router({
+    // Get dashboard overview
+    overview: creatorProcedure.query(async ({ ctx }) => {
+      const { getCreatorDashboardOverview } = await import("./creator-dashboard");
+      return await getCreatorDashboardOverview(ctx.user.id);
+    }),
+
+    // Get revenue analytics
+    revenueAnalytics: creatorProcedure
+      .input(z.object({ days: z.number().default(30) }))
+      .query(async ({ ctx, input }) => {
+        const { getCreatorRevenueAnalytics } = await import("./creator-dashboard");
+        return await getCreatorRevenueAnalytics(ctx.user.id, input.days);
+      }),
+
+    // Get performance metrics
+    performanceMetrics: creatorProcedure.query(async ({ ctx }) => {
+      const { getCreatorPerformanceMetrics } = await import("./creator-dashboard");
+      return await getCreatorPerformanceMetrics(ctx.user.id);
+    }),
+
+    // Get user feedback
+    userFeedback: creatorProcedure
+      .input(z.object({ limit: z.number().default(10) }))
+      .query(async ({ ctx, input }) => {
+        const { getCreatorUserFeedback } = await import("./creator-dashboard");
+        return await getCreatorUserFeedback(ctx.user.id, input.limit);
       }),
   }),
 

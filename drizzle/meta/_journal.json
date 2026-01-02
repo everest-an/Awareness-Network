@@ -50,6 +50,13 @@
       "when": 1767315009498,
       "tag": "0006_cooing_true_believers",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1767316315582,
+      "tag": "0007_true_firebird",
+      "breakpoints": true
     }
   ]
 }

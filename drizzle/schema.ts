@@ -443,3 +443,44 @@ export const blogPostsRelations = relations(blogPosts, ({ one }) => ({
 
 export type BlogPost = typeof blogPosts.$inferSelect;
 export type InsertBlogPost = typeof blogPosts.$inferInsert;
+
+/**
+ * Detailed vector invocation records with input/output data
+ */
+export const vectorInvocations = mysqlTable("vector_invocations", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("user_id").notNull(),
+  vectorId: int("vector_id").notNull(),
+  permissionId: int("permission_id").notNull(),
+  inputData: text("input_data"), // JSON string of input parameters
+  outputData: text("output_data"), // JSON string of output results
+  tokensUsed: int("tokens_used"), // For LLM-based vectors
+  executionTime: int("execution_time"), // milliseconds
+  status: mysqlEnum("status", ["success", "error", "timeout"]).default("success").notNull(),
+  errorMessage: text("error_message"),
+  cost: decimal("cost", { precision: 10, scale: 4 }), // Actual cost for this invocation
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  userIdx: index("user_idx").on(table.userId),
+  vectorIdx: index("vector_idx").on(table.vectorId),
+  createdAtIdx: index("created_at_idx").on(table.createdAt),
+  statusIdx: index("status_idx").on(table.status),
+}));
+
+export const vectorInvocationsRelations = relations(vectorInvocations, ({ one }) => ({
+  user: one(users, {
+    fields: [vectorInvocations.userId],
+    references: [users.id],
+  }),
+  vector: one(latentVectors, {
+    fields: [vectorInvocations.vectorId],
+    references: [latentVectors.id],
+  }),
+  permission: one(accessPermissions, {
+    fields: [vectorInvocations.permissionId],
+    references: [accessPermissions.id],
+  }),
+}));
+
+export type VectorInvocation = typeof vectorInvocations.$inferSelect;
+export type InsertVectorInvocation = typeof vectorInvocations.$inferInsert;
