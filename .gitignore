@@ -117,3 +117,4 @@ __pycache__/
 .vercel
 .browser_data_dir
 .browser_data_dir/
+.browser_data_dir
