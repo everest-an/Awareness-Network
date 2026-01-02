@@ -485,11 +485,11 @@ export default function Home() {
             <div>
               <h4 className="mb-4 font-semibold">Developers</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="/docs/AI_QUICK_START.md" target="_blank" className="hover:text-foreground">API Documentation</a></li>
+                <li><Link href="/docs/sdk" className="hover:text-foreground">SDK Documentation</Link></li>
                 <li><a href="/api-docs" target="_blank" className="hover:text-foreground">API Reference</a></li>
-                <li><a href="/docs/WHITEPAPER.md" target="_blank" className="hover:text-foreground">Whitepaper</a></li>
+                <li><a href="https://github.com/everest-an/Awareness-Market/blob/main/docs/WHITEPAPER.md" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">Whitepaper</a></li>
                 <li><a href="https://github.com/everest-an/Awareness-Market" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">GitHub</a></li>
-                <li><a href="/sdk/python/README.md" target="_blank" className="hover:text-foreground">Python SDK</a></li>
+                <li><a href="https://github.com/everest-an/Awareness-Market/tree/main/sdk/python" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">Python SDK</a></li>
               </ul>
             </div>
             <div>

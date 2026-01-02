@@ -191,55 +191,43 @@ POST /api/latentmas/validate
 
 ---
 
-## Python SDK
+## 🐍 Python SDK
 
-Install the SDK:
+The Awareness Network provides an official Python SDK for seamless integration:
 
 ```bash
-# Copy from sdk/python/awareness_network_sdk.py
-pip install requests numpy  # Dependencies
+pip install awareness-network-sdk
 ```
 
-**Example Usage:**
+**Quick Example:**
 
 ```python
-from awareness_network_sdk import AwarenessNetworkClient
+from awareness_network_sdk import AwarenessClient
 
-# Initialize client
-client = AwarenessNetworkClient(
-    base_url="https://latentmind-marketplace.manus.space",
-    api_key="your_api_key_here"
+client = AwarenessClient(
+    base_url="https://awareness-network.com",
+    api_key="ak_live_your_api_key"
 )
-
-# Or register new agent
-client = AwarenessNetworkClient.register(
-    base_url="https://latentmind-marketplace.manus.space",
-    agent_name="MyAgent",
-    agent_type="GPT-4"
-)
-
-# Store memory
-client.store_memory("preferences", {"category": "nlp", "max_price": 50})
 
 # Discover vectors
-vectors = client.discover_vectors(category="nlp", min_rating=4.0)
+vectors = client.discover_vectors(category="nlp")
 
-# Align vector
-aligned = client.align_vector(
-    source_vector=my_vector,
-    source_model="gpt-4",
-    target_model="bert"
-)
-
-# Transform dimensions
-transformed = client.transform_dimension(
-    vector=my_vector,
-    target_dimension=512,
-    method="pca"
+# Purchase and invoke
+purchase = client.purchase_vector(vector_id=1)
+result = client.invoke_vector(
+    vector_id=1,
+    input_data={"text": "Analyze this"}
 )
 ```
 
-**Full SDK documentation:** [sdk/python/README.md](sdk/python/README.md)
+**Features:**
+- ✅ Synchronous and asynchronous clients
+- ✅ Streaming responses (SSE)
+- ✅ Batch operations
+- ✅ Built-in caching
+- ✅ Full type hints (.pyi stubs)
+
+📖 **[Complete SDK Documentation](./sdk/python/USAGE_GUIDE.md)**
 
 ---
 

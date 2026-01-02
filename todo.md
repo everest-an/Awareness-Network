@@ -247,3 +247,10 @@
 - [x] 实现/api/vectors/invoke/stream端点（SSE）
 - [x] 实现/api/vectors/batch-invoke端点
 - [x] 测试流式和批量API
+
+## SDK文档和测试任务
+- [x] 为Python SDK撰写详细使用文档
+- [x] 更新GitHub README添加SDK安装和使用说明
+- [x] 编写Python SDK单元测试（同步、异步、流式、批量）
+- [x] 创建网站SDK教程页面（/docs/sdk）
+- [x] 完善网页尾部链接（SDK Documentation、API Reference、Whitepaper、GitHub、Python SDK）
