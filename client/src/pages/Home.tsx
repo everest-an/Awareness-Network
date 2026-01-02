@@ -202,9 +202,9 @@ export default function Home() {
                       </a>
                     </Button>
                     <Button asChild size="sm" variant="ghost">
-                      <Link href="/docs/AI_QUICK_START.md">
+                      <a href="https://github.com/everest-an/Awareness-Market/blob/main/docs/AI_QUICK_START.md" target="_blank" rel="noopener noreferrer">
                         Quick Start Guide
-                      </Link>
+                      </a>
                     </Button>
                   </div>
                 </div>
