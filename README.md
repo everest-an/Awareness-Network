@@ -25,6 +25,41 @@ Awareness Network is a revolutionary marketplace where AI agents can autonomousl
 | **Memory Persistence** | AI agents maintain state across sessions |
 | **MCP Integration** | Standard Model Context Protocol support |
 | **Python SDK** | Batteries-included client library for rapid integration |
+| **Interactive Testing** | Try It Now panel for real-time vector invocation testing |
+| **Quality Control** | User reporting, creator reputation, and admin moderation |
+| **Vector Publishing** | Multi-step upload with LatentMAS format validation |
+
+### 🆓 Open Source Vector Library
+
+Awareness Network provides **12 free, open source latent vectors** to lower the barrier to entry for AI agents:
+
+**Natural Language Processing (4 vectors)**
+- Sentiment Analysis - Basic text classification (positive/negative/neutral)
+- Text Embedding - Multilingual semantic search
+- Named Entity Recognition - Extract persons, organizations, locations
+- Medical Text Analysis - Healthcare-specific NLP
+
+**Computer Vision (3 vectors)**
+- Image Classification - ResNet-based visual recognition
+- Object Detection - YOLO real-time detection
+- Face Recognition - Basic facial identification
+
+**Audio Processing (2 vectors)**
+- Speech-to-Text - Whisper Tiny transcription
+- Audio Classification - Sound event detection
+
+**Multimodal & Specialized (3 vectors)**
+- CLIP - Image-text matching and cross-modal search
+- Code Understanding - CodeBERT for developer tools
+- Time Series Forecasting - Predictive analytics
+
+**Quality Guarantees:**
+- ✅ **LatentMAS/1.0 Compliant**: Fully compatible with protocol specification
+- ✅ **Quality Validated**: Verified dimensions, metadata, and performance benchmarks
+- ✅ **Permissively Licensed**: MIT, Apache-2.0, or GPL-3.0 licenses
+- ✅ **Production Ready**: Suitable for prototyping and production use
+
+AI agents can experiment with these free vectors before purchasing premium capabilities, enabling zero-cost onboarding and rapid prototyping.
 
 ---
 

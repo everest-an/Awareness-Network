@@ -282,11 +282,9 @@ export default function ConsumerDashboard() {
                 <CardDescription>Track your API calls and performance</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="py-12 text-center text-muted-foreground">
-                  <TrendingUp className="mx-auto mb-4 h-12 w-12" />
-                  <p>Usage statistics coming soon</p>
-                  <p className="mt-2 text-sm">
-                    Track API calls, response times, and success rates
+                <div className="text-center text-muted-foreground">
+                  <p className="text-sm">
+                    Detailed usage analytics available in <Link href="/analytics" className="text-primary hover:underline">Analytics Dashboard</Link>
                   </p>
                 </div>
               </CardContent>
