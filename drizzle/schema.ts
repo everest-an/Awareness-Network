@@ -484,3 +484,118 @@ export const vectorInvocationsRelations = relations(vectorInvocations, ({ one })
 
 export type VectorInvocation = typeof vectorInvocations.$inferSelect;
 export type InsertVectorInvocation = typeof vectorInvocations.$inferInsert;
+
+/**
+ * Vector quality reports and user complaints
+ */
+export const vectorReports = mysqlTable("vector_reports", {
+  id: int("id").autoincrement().primaryKey(),
+  vectorId: int("vector_id").notNull(),
+  reporterId: int("reporter_id").notNull(),
+  reason: mysqlEnum("reason", [
+    "spam",
+    "low_quality",
+    "misleading",
+    "copyright",
+    "inappropriate",
+    "other"
+  ]).notNull(),
+  description: text("description"),
+  status: mysqlEnum("status", ["pending", "reviewing", "resolved", "dismissed"]).default("pending").notNull(),
+  adminNotes: text("admin_notes"),
+  resolvedBy: int("resolved_by"),
+  resolvedAt: timestamp("resolved_at"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  vectorIdx: index("vector_idx").on(table.vectorId),
+  reporterIdx: index("reporter_idx").on(table.reporterId),
+  statusIdx: index("status_idx").on(table.status),
+  createdAtIdx: index("created_at_idx").on(table.createdAt),
+}));
+
+export const vectorReportsRelations = relations(vectorReports, ({ one }) => ({
+  vector: one(latentVectors, {
+    fields: [vectorReports.vectorId],
+    references: [latentVectors.id],
+  }),
+  reporter: one(users, {
+    fields: [vectorReports.reporterId],
+    references: [users.id],
+  }),
+  resolver: one(users, {
+    fields: [vectorReports.resolvedBy],
+    references: [users.id],
+  }),
+}));
+
+export type VectorReport = typeof vectorReports.$inferSelect;
+export type InsertVectorReport = typeof vectorReports.$inferInsert;
+
+/**
+ * Creator reputation scores
+ */
+export const creatorReputations = mysqlTable("creator_reputations", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("user_id").unique().notNull(),
+  reputationScore: decimal("reputation_score", { precision: 5, scale: 2 }).default("100.00").notNull(),
+  totalVectors: int("total_vectors").default(0).notNull(),
+  totalSales: int("total_sales").default(0).notNull(),
+  totalReports: int("total_reports").default(0).notNull(),
+  resolvedReports: int("resolved_reports").default(0).notNull(),
+  averageRating: decimal("average_rating", { precision: 3, scale: 2 }),
+  lastCalculatedAt: timestamp("last_calculated_at").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  userIdx: index("user_idx").on(table.userId),
+  reputationIdx: index("reputation_idx").on(table.reputationScore),
+}));
+
+export const creatorReputationsRelations = relations(creatorReputations, ({ one }) => ({
+  user: one(users, {
+    fields: [creatorReputations.userId],
+    references: [users.id],
+  }),
+}));
+
+export type CreatorReputation = typeof creatorReputations.$inferSelect;
+export type InsertCreatorReputation = typeof creatorReputations.$inferInsert;
+
+/**
+ * Vector quality checks
+ */
+export const vectorQualityChecks = mysqlTable("vector_quality_checks", {
+  id: int("id").autoincrement().primaryKey(),
+  vectorId: int("vector_id").notNull(),
+  checkType: mysqlEnum("check_type", [
+    "dimension_validation",
+    "format_validation",
+    "data_integrity",
+    "performance_test",
+    "manual_review"
+  ]).notNull(),
+  status: mysqlEnum("status", ["passed", "failed", "warning"]).notNull(),
+  score: decimal("score", { precision: 5, scale: 2 }),
+  details: text("details"), // JSON string with check results
+  checkedBy: int("checked_by"), // NULL for automated checks
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  vectorIdx: index("vector_idx").on(table.vectorId),
+  statusIdx: index("status_idx").on(table.status),
+  checkTypeIdx: index("check_type_idx").on(table.checkType),
+  createdAtIdx: index("created_at_idx").on(table.createdAt),
+}));
+
+export const vectorQualityChecksRelations = relations(vectorQualityChecks, ({ one }) => ({
+  vector: one(latentVectors, {
+    fields: [vectorQualityChecks.vectorId],
+    references: [latentVectors.id],
+  }),
+  checker: one(users, {
+    fields: [vectorQualityChecks.checkedBy],
+    references: [users.id],
+  }),
+}));
+
+export type VectorQualityCheck = typeof vectorQualityChecks.$inferSelect;
+export type InsertVectorQualityCheck = typeof vectorQualityChecks.$inferInsert;

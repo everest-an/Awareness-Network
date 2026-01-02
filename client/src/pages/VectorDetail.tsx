@@ -4,6 +4,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { useEffect, useState } from "react";
 import { PurchaseDialog } from "@/components/PurchaseDialog";
 import { TrialDialog } from "@/components/TrialDialog";
+import { VectorTestPanel } from "@/components/VectorTestPanel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -158,8 +159,9 @@ export default function VectorDetail() {
 
             {/* Tabs */}
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="test">Try It Now</TabsTrigger>
                 <TabsTrigger value="performance">Performance</TabsTrigger>
                 <TabsTrigger value="reviews">Reviews</TabsTrigger>
               </TabsList>
@@ -205,6 +207,15 @@ export default function VectorDetail() {
                 </Card>
 
 
+              </TabsContent>
+
+              <TabsContent value="test" className="space-y-4">
+                <VectorTestPanel
+                  vectorId={vector.id}
+                  hasAccess={!isOwner && isAuthenticated}
+                  pricingModel={vector.pricingModel}
+                  basePrice={vector.basePrice}
+                />
               </TabsContent>
 
               <TabsContent value="performance" className="space-y-4">
